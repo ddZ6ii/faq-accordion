@@ -1,7 +1,64 @@
-html {
-  line-height: 1.5;
-  -webkit-text-size-adjust: 100%;
-  box-sizing: border-box;
+/* Load the variable font (italic variations are not used here) */
+@font-face {
+  /* Use VF to make it distinguishable from static fonts */
+  font-family: 'WorkSans VF';
+  src:
+    local('WorkSans'),
+    /* Main modern font format */
+      url('/assets/fonts/WorkSans-VariableFont_wght.woff2')
+      format('woff2-variations'),
+    /* Fallback font format */
+      url('/assets/fonts/WorkSans-VariableFont_wght.woff')
+      format('woff-variations'),
+    url('/assets/fonts/WorkSans-VariableFont_wght.ttf')
+      format('truetype-variations');
+  font-style: normal;
+  /* Allowable range for the weight of the variable font */
+  font-weight: 400 700;
+  /* Displaying text quickly is a top priority, but ensure the custom web-font is used */
+  font-display: swap;
+}
+
+/* Load the static fonts as a fallback */
+@font-face {
+  font-family: 'WorkSans';
+  src:
+    local('WorkSans'),
+    url('/assets/fonts/static/WorkSans-Regular.woff2') format('woff2'),
+    url('/assets/fonts/static/WorkSans-Regular.woff') format('woff'),
+    url('/assets/fonts/static/WorkSans-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'WorkSans';
+  src:
+    local('WorkSans'),
+    url('/assets/fonts/static/WorkSans-SemiBold.woff2') format('woff2'),
+    url('/assets/fonts/static/WorkSans-SemiBold.woff') format('woff'),
+    url('/assets/fonts/static/WorkSans-SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'WorkSans';
+  src:
+    local('WorkSans'),
+    url('/assets/fonts/static/WorkSans-Bold.woff2') format('woff2'),
+    url('/assets/fonts/static/WorkSans-Bold.woff') format('woff'),
+    url('/assets/fonts/static/WorkSans-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --color-primary-light: hsl(275, 100%, 97%);
+  --color-primary: hsl(274, 77%, 56%);
+  --color-neutral-light: hsl(292, 16%, 49%);
+  --color-neutral-dark: hsl(292, 42%, 14%);
 }
 
 *,
@@ -13,6 +70,23 @@ html {
   color: inherit;
   font: inherit;
   line-height: inherit;
+}
+
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  box-sizing: border-box;
+}
+
+body {
+  /* Using only the following line will result in the browser downloading both variable and static fonts! */
+  /* font-family: 'WorkSans VF', 'WorkSans', sans-serif; */
+
+  /* Use static fonts by default, but use a CSS feature query to load variable font instead if the browser supports it */
+  font-family: 'WorkSans', sans-serif;
+  @supports (font-variation-settings: normal) {
+    font-family: 'WorkSans VF', sans-serif;
+  }
 }
 
 a {

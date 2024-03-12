@@ -1,25 +1,29 @@
-/* Load the variable font (italic variations are not used here) */
+/* #########################################################################
+### CUSTOM FONTS ###
+############################################################################ */
+
+/* Load variable font (italic variations are not used here). */
 @font-face {
-  /* Use VF to make it distinguishable from static fonts */
+  /* Use VF to make it distinguishable from static fonts. */
   font-family: 'WorkSans VF';
   src:
     local('WorkSans'),
-    /* Main modern font format */
+    /* Main modern font format. */
       url('/assets/fonts/WorkSans-VariableFont_wght.woff2')
       format('woff2-variations'),
-    /* Fallback font format */
+    /* Fallback font format. */
       url('/assets/fonts/WorkSans-VariableFont_wght.woff')
       format('woff-variations'),
     url('/assets/fonts/WorkSans-VariableFont_wght.ttf')
       format('truetype-variations');
   font-style: normal;
-  /* Allowable range for the weight of the variable font */
+  /* Allowable range for the weight of the variable font. */
   font-weight: 400 700;
-  /* Displaying text quickly is a top priority, but ensure the custom web-font is used */
+  /* Displaying text quickly is a top priority, but ensure the custom web-font is used. */
   font-display: swap;
 }
 
-/* Load the static fonts as a fallback */
+/* Load static fonts as a fallback. */
 @font-face {
   font-family: 'WorkSans';
   src:
@@ -54,11 +58,17 @@
   font-display: swap;
 }
 
+/* #########################################################################
+### BASE STYLING ###
+############################################################################ */
 :root {
   --color-primary-light: hsl(275, 100%, 97%);
-  --color-primary: hsl(274, 77%, 56%);
+  --color-primary: #9a38e5;
+  --color-complementary: #da9a35;
   --color-neutral-light: hsl(292, 16%, 49%);
   --color-neutral-dark: hsl(292, 42%, 14%);
+  --spacing-vertical: 1.25rem;
+  --transition-duration-timing: 150ms ease-out;
 }
 
 *,
@@ -73,20 +83,45 @@
 }
 
 html {
-  line-height: 1.5;
-  -webkit-text-size-adjust: 100%;
   box-sizing: border-box;
+  line-height: 1.3;
 }
 
 body {
-  /* Using only the following line will result in the browser downloading both variable and static fonts! */
-  /* font-family: 'WorkSans VF', 'WorkSans', sans-serif; */
+  background:
+    url('/assets/images/background-pattern-mobile.svg') top center / contain
+      no-repeat,
+    linear-gradient(var(--color-primary-light), white) no-repeat;
 
   /* Use static fonts by default, but use a CSS feature query to load variable font instead if the browser supports it */
   font-family: 'WorkSans', sans-serif;
   @supports (font-variation-settings: normal) {
     font-family: 'WorkSans VF', sans-serif;
   }
+
+  @media (min-width: 37.5em) {
+    background:
+      url('/assets/images/background-pattern-desktop.svg') top center / contain
+        no-repeat,
+      linear-gradient(var(--color-primary-light), white) no-repeat;
+  }
+}
+
+h1 {
+  line-height: 1.25;
+  font-size: 2em;
+  font-weight: 700;
+}
+
+h1,
+h2 {
+  color: var(--color-neutral-dark);
+}
+
+h2 {
+  line-height: 1.15;
+  font-size: 1.125rem;
+  font-weight: 700;
 }
 
 a {
@@ -97,12 +132,135 @@ abbr {
   text-decoration: none;
 }
 
-img {
-  max-width: 100%;
-  display: block;
+summary {
+  /* Remove default accordion marker. */
+  list-style: none;
 }
 
 ul {
   list-style-position: inside;
   list-style-type: none;
+}
+
+/* #########################################################################
+### COMPONENTS STYLING ###
+############################################################################ */
+.main-layout {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+}
+
+.container {
+  padding: var(--spacing-vertical);
+  margin-inline: auto;
+  width: min(90%, 37.5em);
+}
+
+.faq {
+  padding-block: var(--spacing-vertical);
+  &__container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow:
+      0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+  &__title {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    &::before {
+      content: '';
+      width: 0.8em;
+      aspect-ratio: 1 / 1;
+      background: no-repeat url('/assets/images/icon-star.svg') center / cover;
+    }
+  }
+}
+
+.accordion-container {
+  padding-block: var(--spacing-vertical);
+  border-bottom: 1px solid var(--color-primary-light);
+}
+
+.accordion {
+  &__toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1em;
+    cursor: pointer;
+    transition: all var(--transition-duration-timing);
+    &:hover,
+    &:focus-visible,
+    .accordion[open] & {
+      color: var(--color-primary);
+    }
+    &:focus-visible {
+      outline-color: var(--color-primary);
+      outline-offset: 4px;
+    }
+  }
+  &__title {
+    color: inherit;
+  }
+  &__icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: auto;
+    &--collapse {
+      display: none;
+    }
+    .accordion[open] &--collapse {
+      display: block;
+    }
+    .accordion[open] &--expand {
+      display: none;
+    }
+  }
+  &__content {
+    padding-top: var(--spacing-vertical);
+    color: var(--color-neutral-light);
+    font-weight: 400;
+    font-size: 1rem;
+  }
+}
+
+.footer {
+  text-align: center;
+  color: var(--color-neutral-dark);
+  &__link {
+    transition: all var(--transition-duration-timing);
+    &,
+    &:link {
+      color: var(--color-primary);
+      text-underline-offset: 4px;
+    }
+    &:visited {
+      color: var(--color-neutral-dark);
+    }
+
+    &:focus-visible,
+    &:hover {
+      color: var(--color-complementary);
+      font-weight: 600;
+    }
+
+    &:focus-visible {
+      outline-color: var(--color-complementary);
+      outline-offset: 1px;
+      text-decoration: none;
+    }
+
+    &:active {
+      color: var(--color-neutral-dark);
+    }
+  }
+  &__icon {
+    color: var(--color-complementary);
+  }
 }

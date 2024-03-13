@@ -6,17 +6,18 @@ This is a solution to the [FAQ accordion challenge on Frontend Mentor](https://w
 
 - [Overview](#overview)
   - [The challenge](#the-challenge)
-  - [Screenshot](#screenshot)
+  - [Screenshots](#screenshots)
   - [Links](#links)
+- [Getting started](#getting-started)
 - [My process](#my-process)
   - [Built with](#built-with)
+  - [Deployed with](#deployed-with)
   - [What I learned](#what-i-learned)
-  - [Continued development](#continued-development)
+    - [Handling custom fonts](#handling-custom-fonts)
+    - [Animating state transition](#animating-state-transition)
+    - [Using motion feature query](#using-motion-feature-query)
   - [Useful resources](#useful-resources)
 - [Author](#author)
-- [Acknowledgments](#acknowledgments)
-
-**Note: Delete this note and update the table of contents based on what sections you keep.**
 
 ## Overview
 
@@ -29,87 +30,178 @@ Users should be able to:
 - View the optimal layout for the interface depending on their device's screen size
 - See hover and focus states for all interactive elements on the page
 
-### Screenshot
+### Screenshots
 
-![](./screenshot.jpg)
+- Mobile:
 
-Add a screenshot of your solution. The easiest way to do this is to use Firefox to view your project, right-click the page and select "Take a Screenshot". You can choose either a full-height screenshot or a cropped one based on how long the page is. If it's very long, it might be best to crop it.
+  ![mobile](./screenshots/mobile_640p.webp)
 
-Alternatively, you can use a tool like [FireShot](https://getfireshot.com/) to take the screenshot. FireShot has a free option, so you don't need to purchase it.
+- Laptop/Desktop:
 
-Then crop/optimize/edit your image however you like, add it to your project, and update the file path in the image above.
-
-**Note: Delete this note and the paragraphs above when you add your screenshot. If you prefer not to add a screenshot, feel free to remove this entire section.**
+  ![desktop](./screenshots/desktop_1080p.webp)
 
 ### Links
 
-- Solution URL: [Add solution URL here](https://your-solution-url.com)
-- Live Site URL: [Add live site URL here](https://your-live-site-url.com)
+- Solution URL: [frontend-mentor-solution](https://www.frontendmentor.io/solutions/responsive-accessible-and-animated-faq-using-native-html-elements-yfeCwPBBHa)
+- Live Site URL: [faq-accordion](https://faq-accordion-ten-theta.vercel.app/)
+
+## Getting started
+
+Clone the project and run the following command:
+
+```console
+yarn install
+```
+
+This will initialize the project by installing all the required dependencies.
 
 ## My process
 
 ### Built with
 
-- Semantic HTML5 markup
-- CSS custom properties
-- Flexbox
-- CSS Grid
-- Mobile-first workflow
-- [React](https://reactjs.org/) - JS library
-- [Next.js](https://nextjs.org/) - React framework
-- [Styled Components](https://styled-components.com/) - For styles
+![HTML5](https://img.shields.io/badge/HTML5-E34F26.svg?style=for-the-badge&logo=HTML5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6.svg?style=for-the-badge&logo=CSS3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
 
-**Note: These are just examples. Delete this note and replace the list above with your own choices**
+- Semantic HTML5 markup
+- CSS Grid
+- JavaScript for custom animation
+- Vite bundler
+- Mobile-first workflow
+
+### Deployed with
+
+![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
 
 ### What I learned
 
-Use this section to recap over some of your major learnings while working through this project. Writing these out and providing code samples of areas you want to highlight is a great way to reinforce your own knowledge.
+#### Handling custom fonts
 
-To see how you can add code snippets, see below:
+To efficiently manage and serve custom fonts, it is important to:
 
-```html
-<h1>Some HTML code I'm proud of</h1>
-```
+- prefer using _self-hosted_ fonts (third-party font services like Google Fonts are great but not privacy friendly neither GDPR compliant)
+- limit the number of fonts used: the fastest font to deliver is a font that isn't requested in the first place
+- prefer serving _variable font_ first. Contrary to static fonts which require a different file for each variation, variable fonts can comprise all their variations (weights, widths, and styles available) in a _single_ font file which can be serve with a single `@font-face` reference. This is particularly helpful in case of multiple font variations are used since it can lower the downloaded file size
 
 ```css
-.proud-of-this-css {
-  color: papayawhip;
+/* Use static fonts by default... */
+font-family: 'WorkSans', sans-serif;
+
+/*...but prefer loading variable font if supported (feature query). */
+@supports (font-variation-settings: normal) {
+  font-family: 'WorkSans VF', sans-serif;
 }
 ```
 
-```js
-const proudOfThisFunc = () => {
-  console.log('🎉');
-};
+- prefer using _modern font formats_ like `woff2` which has the widest browser support and offers the best compression, leading to less data to download and therefore faster performance
+- provide different font formats as _fallbacks_ like `woff` or `ttf` to support old browsers and ensure excellent coverage
+
+```css
+@font-face {
+  font-family: 'WorkSans VF';
+  src:
+    local('WorkSans'),
+    /* Main modern font format. */
+      url('/assets/fonts/WorkSans-VariableFont_wght.woff2') format('woff2-variations'),
+    /* Fallback font format. */
+      url('/assets/fonts/WorkSans-VariableFont_wght.woff') format('woff-variations'),
+    url('/assets/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations');
+}
 ```
 
-If you want more help with writing markdown, we'd recommend checking out [The Markdown Guide](https://www.markdownguide.org/) to learn more.
+- implement an appropriate `font-display` strategy to decide how a browser should handle a not yet loaded font
 
-**Note: Delete this note and the content within this section and replace with your own learnings.**
+#### Animating state transition
 
-### Continued development
+The main challenge was to animate the accordion's state transition (expanded / collapsed).
 
-Use this section to outline areas that you want to continue focusing on in future projects. These could be concepts you're still not completely comfortable with or techniques you found useful that you want to refine and perfect.
+The reason is that interacting with the accordion automatically toggles an `open` attribute which cannot be animated (same problem as trying to animate to/from a `display: none` property).
 
-**Note: Delete this note and the content within this section and replace with your own plans for continued development.**
+One solution consists in _delaying the default behavior_ to first apply the desired animation or transition.
+
+In this implementation, I use JavaScript to add a custom `expanded` attribute on the accordion's panel styled with CSS transition. This serves as an _intermediate transient_ state.
+
+```css
+&__panel {
+  display: grid;
+  /* Hide the the collapsed panel but leave it accessible to screen reader (contrary to display: none, the visibility property can be animated). */
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  /* Optional but better visual effect. */
+  opacity: 0;
+
+  /* Use a custom attribute (dynamically added/removed with JavaScript) to enable CSS transitions between the accordion states. */
+  &[expanded='true'] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+&__drawer {
+  overflow: hidden;
+}
+```
+
+When transitioning from the collapsed to the expanded state, I simply used a `setTimeout()` function to asynchronously add the `expanded` attribute. This ensures the `open` attribute is set first prior running the animation. This seems to be enough to do the trick.
+
+```javascript
+if (!accordion.open) {
+  /* Firefox fix. */
+  setTimeout(() => {
+    panel.setAttribute('expanded', 'true');
+  }, 0);
+}
+```
+
+Transitioning from the expanded to the collapsed state requires a bit more fiddling. The default behavior is to remove the `open` attribute from the `<details>` HTML element, which removes the accordion's panel from the DOM thus skipping any animation. The hack consists in:
+
+1. preventing this default behavior using: `e.preventDefault()`
+2. removing the custom `expanded` attribute which runs the CSS animation
+3. waiting for the animation to end prior to resuming to the default behavior: `addEventListener('transitionend, () => { ... }, { once: true })`
+
+```javascript
+if (accordion.open) {
+  /* 1 */
+  e.preventDefault();
+  /* 2 */
+  panel.removeAttribute('expanded');
+  /* 3 */
+  panel.addEventListener(
+    'transitionend',
+    () => accordion.removeAttribute('open'),
+    { once: true },
+  );
+}
+```
+
+#### Using motion feature query
+
+⚠️ _People don’t always like motion or worse are sensitive to motion sickness!_
+
+Therefore it is good practice to group _impactful_ animations/transition under a _feature query_
+
+```css
+@media (prefers-reduced-motion: no-preference) {
+  /* ... */
+}
+```
+
+💡 _This browser feature can be emulate in Chrome dev tools from the command palette (`CMD + SHIFT + P`), then typing \_reduced-motion_ and choosing _emulate_
+
+</aside>
 
 ### Useful resources
 
-- [Example resource 1](https://www.example.com) - This helped me for XYZ reason. I really liked this pattern and will use it going forward.
-- [Example resource 2](https://www.example.com) - This is an amazing article which helped me finally understand XYZ. I'd recommend it to anyone still learning this concept.
-
-**Note: Delete this note and replace the list above with resources that helped you during the challenge. These could come in handy for anyone viewing your solution or for yourself when you look back on this project in the future.**
+- [Best practice for fonts](https://web.dev/articles/font-best-practices) - Excellent insightful article about optimiwinf font by _Katie Hempenius_ and _Barry Pollard_
+- [Implementing a variable font with fallback web fonts](https://pimpmytype.com/variable-font-fallback/) - Great tutorial by _Oliver Schöndorfer_
+- [Accoprdion pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/) - Useful doc for accordion by _Oliver Schöndorfer_
+- [Details and summary](https://web.dev/learn/html/details) - Helpful article on disclosure widget with great examples
+- [Animate from display none](https://www.youtube.com/watch?v=4prVdA7_6u0&list=PLB4ymnBGpxDd2D4U9t1UZZckddqxc6dzF&index=42&t=900s) - Great hack from the mighty CSS master _Kevin Powell_ 👍
 
 ## Author
 
-- Website - [Add your name here](https://www.your-site.com)
-- Frontend Mentor - [@yourusername](https://www.frontendmentor.io/profile/yourusername)
-- Twitter - [@yourusername](https://www.twitter.com/yourusername)
-
-**Note: Delete this note and add/remove/edit lines above based on what links you'd like to share.**
-
-## Acknowledgments
-
-This is where you can give a hat tip to anyone who helped you out on this project. Perhaps you worked in a team or got some inspiration from someone else's solution. This is the perfect place to give them some credit.
-
-**Note: Delete this note and edit this section's content as necessary. If you completed this challenge by yourself, feel free to delete this section entirely.**
+- Github - [ddZ6ii](https://github.com/ddZ6ii)
+- Frontend Mentor - [ddZ6ii](https://www.frontendmentor.io/profile/ddZ6ii)
+- Linkedin - [denis-dezest](https://www.linkedin.com/in/denis-dezest/)

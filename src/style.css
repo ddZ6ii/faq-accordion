@@ -68,7 +68,9 @@
   --color-neutral-light: hsl(292, 16%, 49%);
   --color-neutral-dark: hsl(292, 42%, 14%);
   --spacing-vertical: 1.25rem;
-  --transition-duration-timing: 150ms ease-out;
+  --transition-duration-timing-to: 150ms ease-out;
+  --transition-duration-timing-from: 500ms ease-out;
+  --transition-duration-timing-delay-from: 0s 500ms ease-out;
 }
 
 *,
@@ -88,22 +90,12 @@ html {
 }
 
 body {
-  background:
-    url('/assets/images/background-pattern-mobile.svg') top center / contain
-      no-repeat,
-    linear-gradient(var(--color-primary-light), white) no-repeat;
-
-  /* Use static fonts by default, but use a CSS feature query to load variable font instead if the browser supports it */
+  /* Use static fonts by default... */
   font-family: 'WorkSans', sans-serif;
+
+  /*...but prefer loading variable font if supported (feature query). */
   @supports (font-variation-settings: normal) {
     font-family: 'WorkSans VF', sans-serif;
-  }
-
-  @media (min-width: 37.5em) {
-    background:
-      url('/assets/images/background-pattern-desktop.svg') top center / contain
-        no-repeat,
-      linear-gradient(var(--color-primary-light), white) no-repeat;
   }
 }
 
@@ -142,15 +134,34 @@ ul {
   list-style-type: none;
 }
 
+footer {
+  color: var(--color-neutral-light);
+  font-weight: 400;
+  font-size: 1rem;
+}
+
 /* #########################################################################
 ### COMPONENTS STYLING ###
 ############################################################################ */
 .main-layout {
   position: relative;
+
   min-height: 100dvh;
   display: grid;
   grid-template-rows: 1fr auto;
   align-items: center;
+
+  background:
+    url('/assets/images/background-pattern-mobile.svg') top center / contain
+      no-repeat,
+    linear-gradient(var(--color-primary-light), white) no-repeat;
+
+  @media (min-width: 37.5em) {
+    background:
+      url('/assets/images/background-pattern-desktop.svg') top center / contain
+        no-repeat,
+      linear-gradient(var(--color-primary-light), white) no-repeat;
+  }
 }
 
 .container {
@@ -170,9 +181,11 @@ ul {
   }
   &__title {
     margin-bottom: 1rem;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
     align-items: center;
     gap: 0.75em;
+
     &::before {
       content: '';
       width: 0.8em;
@@ -189,44 +202,84 @@ ul {
 
 .accordion {
   &__toggle {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1em;
     cursor: pointer;
-    transition: all var(--transition-duration-timing);
+    transition: all var(--transition-duration-timing-to);
+
     &:hover,
     &:focus-visible,
     .accordion[open] & {
       color: var(--color-primary);
     }
+
     &:focus-visible {
       outline-color: var(--color-primary);
       outline-offset: 4px;
     }
   }
   &__title {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.75em;
     color: inherit;
+
+    &::after {
+      content: '';
+      width: 32px;
+      aspect-ratio: 1 / 1;
+      background: no-repeat url('/assets/images/icon-plus.svg') center / cover;
+    }
+    .accordion:has(.accordion__panel[expanded]) &::after {
+      background-image: url('/assets/images/icon-minus.svg');
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      &::after {
+        transition: background-image var(--transition-duration-timing-from);
+      }
+      .accordion:has(.accordion__panel[expanded]) &::after {
+        transition: background-image var(--transition-duration-timing-to);
+      }
+    }
   }
-  &__icon {
-    flex-shrink: 0;
-    width: 32px;
-    height: auto;
-    &--collapse {
-      display: none;
+  &__panel {
+    display: grid;
+    /* Hide the the collapsed panel but leave it accessible to screen reader. */
+    /* Contrary to 'display: none', the 'visibility' property can be delayed to transition other properties (here 'grid-template-row'). */
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    /* Optional but better visual effect. */
+    opacity: 0;
+
+    /* Use a custom attribute (dynamically added/removed with JavaScript) to enable CSS transitions between the accordion states. */
+    &[expanded='true'] {
+      grid-template-rows: 1fr;
+      visibility: visible;
+      opacity: 1;
     }
-    .accordion[open] &--collapse {
-      display: block;
+
+    /* Show CSS transition only if allowed by user's browser settings (Feature query). */
+    @media (prefers-reduced-motion: no-preference) {
+      /* Transition from expanded to collapsed state. */
+      /* The 'visibility: hidden' property cannot be animated but it can be delayed so it kicks in only after the 'grid-template-rows' and 'opacity' transitions are complete. */
+      transition:
+        grid-template-rows var(--transition-duration-timing-from),
+        visibility var(--transition-duration-timing-delay-from),
+        opacity var(--transition-duration-timing-from);
+      /* Transition from collapsed to expanded state (no delay required).*/
+      /* This works since 'visbility: visible' is set instantaneously and the 'grid-template-rows' and 'opacity' control the state transition. */
+      &[expanded] {
+        transition:
+          grid-template-rows var(--transition-duration-timing-to),
+          visibility 0s 0s ease-out,
+          opacity var(--transition-duration-timing-to);
+      }
     }
-    .accordion[open] &--expand {
-      display: none;
-    }
+  }
+  &__drawer {
+    overflow: hidden;
   }
   &__content {
     padding-top: var(--spacing-vertical);
-    color: var(--color-neutral-light);
-    font-weight: 400;
-    font-size: 1rem;
   }
 }
 
@@ -234,7 +287,7 @@ ul {
   text-align: center;
   color: var(--color-neutral-dark);
   &__link {
-    transition: all var(--transition-duration-timing);
+    transition: all var(--transition-duration-timing-to);
     &,
     &:link {
       color: var(--color-primary);
